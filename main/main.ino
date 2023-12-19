@@ -1,6 +1,28 @@
 #include "MPU9250.h"
+#include <Servo.h>
 
+#define MotorPin 15
+
+Servo ESC;
 MPU9250 mpu;
+float value = 0;
+// const int pwmPin = 16; 
+
+/*
+void  test_motor(int percentage)
+{
+    // Ensure the percentage is within the valid range
+  percentage = constrain(percentage, 0, 100);
+
+  // Map the percentage (0 to 100) to the PWM range (0 to 1023)
+  int dutyCycle = map(percentage, 0, 100, 0, 1023);
+
+  // Set PWM duty cycle
+  analogWrite(pwmPin, dutyCycle);
+
+}
+*/
+
 
 float acc[3];
 float gyro[3];
@@ -26,6 +48,8 @@ void setup() {
   Serial.begin(115200);
   Wire.begin();
   delay(2000);
+  // pinMode(pwmPin, OUTPUT);
+  ESC.attach(MotorPin,1000,2000);
 
   if (!mpu.setup(0x68)) {  // change to your own address
     while (1) {
@@ -36,6 +60,7 @@ void setup() {
 }
 
 void loop() {
+  int i = 0;
   if (mpu.update()) {
     // Read accelerometer, gyroscope, and magnetometer data
     acc[0] = mpu.getAccX();
@@ -57,7 +82,16 @@ void loop() {
 
     // Print the angles
     print_roll_pitch_yaw();
-  }
+  
+}
+    value = abs(pitch);
+    if (value <= 5)
+      value = 0;
+    else
+    // value = map(value, 0, 100, 0, 180);
+      ESC.write(value);
+    
+
 }
 
 void print_roll_pitch_yaw() {
